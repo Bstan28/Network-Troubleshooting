@@ -1,2 +1,2 @@
 # Network-Troubleshooting
-Scripts that help network diagnostics and troubleshooting.
+Scripts that I've developed to help with network diagnostics and troubleshooting.
