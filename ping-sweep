@@ -1,0 +1,83 @@
+import datetime
+import ipaddress
+from ping3 import ping
+import concurrent.futures
+import re
+import tkinter
+#import sys
+#import threading
+
+#Build a list of IPs to ping.
+#Take in a string, regex out the IPs and then ping the list.
+
+pattern = r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'
+
+
+def get_ips():
+    string = tkinter.simpledialog.askstring('Input IPs to ping:','Input IPs to ping:')
+    if string == '' or type(string) == type(None):
+        #Cancel Button was clicked.
+        return {}
+    else:
+        #Check for valid IPs.
+        matches = re.findall(pattern, string)
+        
+        #Build a list of IPs to ping.
+        ips = {i: ip for i, ip in enumerate(matches)}
+        return ips
+
+def ping_sweep(subnet):
+    network = ipaddress.ip_network(subnet, strict=False)
+    results = []
+
+    for ip in network.hosts():
+        ip_str = str(ip)
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        try:
+            response_time = ping(ip_str, timeout=1)
+            if response_time is not None:
+                message = f"{timestamp} - {ip_str} is reachable"
+            else:
+                message = f"{timestamp} - {ip_str} is unreachable"
+        except Exception:
+            message = f"{timestamp} - Error pinging {ip_str}"
+
+        results.append(message)
+        
+
+    #Save results to a file:
+
+    # output_file = 'ping_results.txt'
+    # output_lock = threading.Lock()
+    
+    # with output_lock:
+    #     print(f"Ping results for subnet {subnet}:")
+    #     with open(output_file, 'a') as f:
+    #         f.write(f"Ping results for subnet {subnet}:\n")
+    #         for msg in results:
+    #             print(msg)
+    #             f.write(msg + '\n')
+    #         f.write('\n')
+    #     print()
+    
+    for msg in results:
+        print(msg + '\n')
+
+##########################################################################################
+
+'''
+Example of network documentation verbage:
+Missing documentation for host 192.168.36.2/32    
+Missing documentation for host 192.168.48.49/32    
+''' 
+
+ips = get_ips()
+while len(ips) == 0:
+    tkinter.messagebox.showinfo('Try Again','No vailid IPs were entered. Please try again.')
+    ips = get_ips()
+
+#print(ips)
+#sys.exit()
+
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    executor.map(ping_sweep, list(ips.values()))
