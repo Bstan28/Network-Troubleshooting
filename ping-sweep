@@ -4,6 +4,7 @@ from ping3 import ping
 import concurrent.futures
 import re
 import tkinter
+import tkinter.simpledialog
 #import sys
 #import threading
 
